@@ -1,5 +1,7 @@
 # 群像模拟器 / Ensemble Simulator
 
+**AI驱动·多角色·文字模拟 | 把你的OC放进世界，看他们自己活起来 | 零基础可运行**
+
 <!-- Badges: 发布到 GitHub 后请替换 your-org / repo-name -->
 ![Stars](https://img.shields.io/github/stars/SarahXu31/ensemble-simulator?style=social)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -7,6 +9,10 @@
 ![React](https://img.shields.io/badge/React-TypeScript-61DAFB.svg)
 ![Convex](https://img.shields.io/badge/backend-Convex-EE342F.svg)
 ![Local First](https://img.shields.io/badge/local--first-privacy-green.svg)
+
+## 一句话介绍
+
+你有没有想过：如果自己的OC真的活在一个世界里会是什么样？**群像模拟器**让多个角色共享同一个世界，自主聊天、产生关系、经历事件——**你只需要坐下来看。**
 
 > **把你的 OC 放进一个世界里，看他们自己活起来。**  
 > *Put your OCs into a world. Watch them live.*
@@ -46,57 +52,9 @@
 
 ---
 
-## 为什么做这个项目？ / Why this project?
-
-很多 AI 角色产品的核心体验是 **一对一聊天**：你说一句，角色回一句，剧情依赖你不断推进。
-
-风莫村想做的是另一种体验：
-
-### 1. 你的角色，你的故事
-
-你可以导入自己的 OC、喜欢的角色，或自定义角色卡。系统会让他们在同一个世界中相遇、聊天、试探、冲突、靠近或疏远。
-
-*Your characters are not waiting in separate chat boxes. They are living in the same world.*
-
-### 2. 世界观不是背景板，而是互动容器
-
-角色不会孤立存在于一个空白 Prompt 里。他们会受到地点、事件、关系、时间线和世界规则影响。
-
-当前世界观是古风江湖村落「风莫村」；未来可以扩展到更多世界包。
-
-*The world is not decoration. It is the stage, memory, and rule system for character interaction.*
-
-### 3. 纯观察体验，挂机也能看戏
-
-你可以随时介入，但不需要一直操作。核心体验是：启动世界，然后看角色自己聊天、结盟、误会、暗生情愫、产生冲突，观察关系如何变化。
-
-*Start the simulation, then watch relationships and stories emerge.*
-
-### 4. 零门槛上手，本地优先
-
-不填 API Key 也可以启动体验。LLM 能力是增强项，不是必选项。角色数据和世界状态默认保存在本地，更适合 OC、私设和个人创作场景。
-
-*No API key required to start. Local-first by default.*
-
----
-
-## 功能特性 / Features
-
-- 🧑‍🎨 **导入你的 OC** — 支持自定义原创角色、喜欢的角色、人设模板或预设角色。
-- 🌍 **世界观驱动互动** — 角色会在同一个世界中行动，而不是各自待在独立聊天框里。
-- 💬 **多 Agent 自主对话** — 角色可以主动发起对话，不需要用户每一步手动推进。
-- 🎲 **随机相遇与剧情火花** — 世界会制造偶遇、闲谈、误会、冲突和关系变化。
-- ❤️ **关系值演算** — 记录角色之间的亲近、疏离、信任、敌意、好奇等动态变化。
-- 🌀 **人设漂移** — 角色会在长期互动和重大事件影响下发生细微变化。
-- 🕰️ **大事件时间线** — 当前「风莫村」内置关键事件，用于推动群像剧情发展。
-- 🧩 **世界观包架构** — 风莫村只是第一个世界，框架支持后续扩展更多世界观。
-- 🏠 **完全本地运行** — 数据不上云，更适合私密 OC、私设和个人创作。
-- 🔑 **LLM 可选配置** — 不配置 API Key 也能玩；配置后可开启更丰富的 AI 总结和关系分析。
-- ⏩ **时间流速可调** — 支持 4x / 8x / 16x / 60x 等不同节奏。
-
----
-
 ## 快速开始 / Quick Start
+
+✅ **零基础也能跑！不需要 AI API Key，下载即可体验**
 
 下面这份「快速开始」写给**第一次跑本地项目**的朋友：按顺序做就能跑起来。
 
@@ -128,6 +86,38 @@
 ```
 
 ### 方式二：手动安装（自己来）
+
+---
+
+## 功能亮点 / Features
+
+- 🧑‍🎨 **导入你的 OC** — 支持自定义原创角色、喜欢的角色、人设模板或预设角色。
+- 🌍 **世界观驱动互动** — 角色会在同一个世界中行动，而不是各自待在独立聊天框里。
+- 💬 **多 Agent 自主对话** — 角色可以主动发起对话，不需要用户每一步手动推进。
+- 🎲 **随机相遇与剧情火花** — 世界会制造偶遇、闲谈、误会、冲突和关系变化。
+- ❤️ **关系值演算** — 记录角色之间的亲近、疏离、信任、敌意、好奇等动态变化。
+- 🌀 **人设漂移** — 角色会在长期互动和重大事件影响下发生细微变化。
+- 🕰️ **大事件时间线** — 当前「风莫村」内置关键事件，用于推动群像剧情发展。
+- 🧩 **世界观包架构** — 风莫村只是第一个世界，框架支持后续扩展更多世界观。
+- 🏠 **完全本地运行** — 数据不上云，更适合私密 OC、私设和个人创作。
+- 🔑 **LLM 可选配置** — 不配置 API Key 也能玩；配置后可开启更丰富的 AI 总结和关系分析。
+- ⏩ **时间流速可调** — 支持 4x / 8x / 16x / 60x 等不同节奏。
+
+---
+
+## 环境依赖
+
+- **Node.js >= 18**（必需）
+  - 下载：https://nodejs.org/
+- **Convex 账号**（必需，免费）
+  - 官网：https://convex.dev/
+- **LLM API Key**（可选）
+  - 不填也能玩与观察模拟
+  - 填了可开启「AI 总结/关系分析」等增强能力（支持 OpenAI / DeepSeek / Ollama 等 **OpenAI-compatible** 服务）
+
+---
+
+## 分步安装（小白照做版）
 
 #### 0) 环境准备（只要做一次）
 
@@ -202,6 +192,90 @@ http://localhost:5173/ai-town/ ）
 3. 点击「**开始模拟**」，观察角色自由互动
 
 更详细的安装与排错请看：[`SETUP.md`](./SETUP.md)
+
+---
+
+## 常见报错 FAQ
+
+### 1) `port 5173 already in use`
+
+**原因：** 5173 端口已经被其他程序占用（可能是你之前启动过一个 Vite 项目但没关）。
+
+**解决：**
+- 先把占用端口的进程关掉后再重试；或
+- 换一个端口启动（如果你熟悉命令行，可以用 Vite 的端口参数）。
+
+### 2) `convex: command not found`
+
+**原因：** Convex CLI 没有正确安装/没有通过 `npx` 执行。
+
+**解决：**
+- 优先使用项目里推荐的方式：在项目根目录运行：
+  ```bash
+  npx convex dev
+  ```
+- 确认你的 Node.js / npm 安装正常（能跑 `node -v`、`npm -v`）。
+
+### 3) 页面一直转圈「世界正在苏醒」
+
+**常见原因：**
+- Convex 后端没有跑起来；
+- 你关闭了运行 `npx convex dev` 的终端窗口；
+- 首次启动还在引导你登录/初始化 Convex，但你没完成。
+
+**解决：**
+1. 确认一个终端窗口里一直在运行：
+   ```bash
+   npx convex dev
+   ```
+2. 按终端提示完成 Convex 的登录与初始化。
+3. 另开一个终端再运行前端：
+   ```bash
+   npm run dev
+   ```
+
+### 4) Windows 用户路径问题
+
+**现象：** 有时会遇到路径分隔符（`\`）或权限相关的问题。
+
+**建议：**
+- 使用 **Windows Terminal / PowerShell**，并确保 Node.js、Git 安装正确；
+- 尽量把项目放在不需要管理员权限的目录（例如你的用户目录下）；
+- 如果你用的是 WSL（Windows Subsystem for Linux），建议统一在 WSL 环境里执行所有命令。
+
+---
+
+## 为什么做这个项目？ / Why this project?
+
+很多 AI 角色产品的核心体验是 **一对一聊天**：你说一句，角色回一句，剧情依赖你不断推进。
+
+风莫村想做的是另一种体验：
+
+### 1. 你的角色，你的故事
+
+你可以导入自己的 OC、喜欢的角色，或自定义角色卡。系统会让他们在同一个世界中相遇、聊天、试探、冲突、靠近或疏远。
+
+*Your characters are not waiting in separate chat boxes. They are living in the same world.*
+
+### 2. 世界观不是背景板，而是互动容器
+
+角色不会孤立存在于一个空白 Prompt 里。他们会受到地点、事件、关系、时间线和世界规则影响。
+
+当前世界观是古风江湖村落「风莫村」；未来可以扩展到更多世界包。
+
+*The world is not decoration. It is the stage, memory, and rule system for character interaction.*
+
+### 3. 纯观察体验，挂机也能看戏
+
+你可以随时介入，但不需要一直操作。核心体验是：启动世界，然后看角色自己聊天、结盟、误会、暗生情愫、产生冲突，观察关系如何变化。
+
+*Start the simulation, then watch relationships and stories emerge.*
+
+### 4. 零门槛上手，本地优先
+
+不填 API Key 也可以启动体验。LLM 能力是增强项，不是必选项。角色数据和世界状态默认保存在本地，更适合 OC、私设和个人创作场景。
+
+*No API key required to start. Local-first by default.*
 
 ---
 
@@ -436,6 +510,12 @@ MIT License.
 
 **把你的角色放进世界里，看他们自己活起来。**  
 **Put your OCs into a world. Watch them live.**
+
+---
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=SarahXu31/ensemble-simulator&type=Date)](https://star-history.com/#SarahXu31/ensemble-simulator&Date)
 
 ---
 
