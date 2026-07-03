@@ -98,23 +98,110 @@
 
 ## 快速开始 / Quick Start
 
-```bash
-# 1. 安装依赖
-npm install
+下面这份「快速开始」写给**第一次跑本地项目**的朋友：按顺序做就能跑起来。
 
-# 2. 启动本地应用
-npm run dev
+### 方式一：让 AI Agent 帮你配置（推荐新手）
 
-# 3. 打开终端中显示的本地地址
+如果你不熟悉命令行、担心装环境会踩坑，可以把整个项目交给支持代码操作的 AI Agent，让它帮你把环境配好并跑起来。
+
+你只需要：
+1) 下载项目（下载压缩包或 `git clone` 都可以）
+2) 把**项目文件夹**交给 Agent
+3) 按 Agent 的提示点确认/登录（例如 Convex 登录）
+
+可选的 Agent 工具举例（你可以任选一个你顺手的）：
+
+- **Cursor**（AI 代码编辑器，最推荐，免费可用）：打开项目文件夹，在聊天框告诉它「帮我把这个项目跑起来」。
+- **Claude / ChatGPT**（对话式 AI）：把本 README（或下面的提示词）粘贴给它，说「我是新手，请一步步指导我把这个项目跑起来」。
+- **GitHub Copilot**（VS Code 插件）：在 VS Code 里打开项目，用 Copilot Chat 提问并让它带你执行命令。
+- **Aime**（本项目推荐的 AI 助理）：直接告诉 Aime「帮我配置并启动群像模拟器」。
+
+你可以直接复制下面这段「对话示例提示词」发给 Agent：
+
+```text
+我下载了群像模拟器这个项目，请帮我：
+1. 安装 Node.js（如果没有）
+2. 在项目目录执行 npm install
+3. 配置并启动 Convex 后端（npx convex dev）
+4. 启动前端（npm run dev）
+让我能在浏览器里打开 http://localhost:5173/ai-town/
 ```
 
-启动后：
+### 方式二：手动安装（自己来）
 
-1. 选择 **Fengmo Village / 风莫村** 世界观。
-2. 使用 6 位预设角色，或导入 / 创建自己的 OC。
-3. 开始模拟，然后观察角色自由互动。
+#### 0) 环境准备（只要做一次）
 
-> 如果你的项目最终使用 `pnpm`、`yarn` 或 Aime Skill 的专用启动方式，可以在发布前替换这里的命令。
+- **安装 Node.js（建议 v18+）**：https://nodejs.org/
+  - 安装完成后你可以在终端里验证：
+    ```bash
+    node -v
+    npm -v
+    ```
+- **安装 Git**（用于下载代码）：https://git-scm.com/downloads
+  - 安装完成后可验证：
+    ```bash
+    git --version
+    ```
+- **注册 / 登录 Convex 账号**（免费）：https://convex.dev/
+  - Convex 是本项目使用的「后端服务」（负责数据存储、实时同步、表结构等）。
+
+#### 1) 下载项目代码
+
+打开终端（macOS 可用「终端/Terminal」，Windows 可用 PowerShell 或 Windows Terminal），执行：
+
+```bash
+git clone https://github.com/SarahXu31/ensemble-simulator.git
+cd ensemble-simulator
+```
+
+#### 2) 安装依赖
+
+这一步会把项目需要的前端依赖下载安装到本地（会花 1~5 分钟，取决于网速）。
+
+```bash
+npm install
+```
+
+#### 3) 配置并启动 Convex 后端
+
+在项目根目录执行：
+
+```bash
+npx convex dev
+```
+
+说明：**首次运行**会要求你登录 Convex 账号，并引导你初始化一个项目（按终端提示一路确认即可）。
+
+> 建议：让这个终端窗口一直开着（Convex 在运行中）。
+
+#### 4) 启动前端项目
+
+**另开一个终端窗口**（保持上一步的 Convex 仍在运行），同样进入项目目录后执行：
+
+```bash
+npm run dev
+```
+
+然后打开浏览器访问终端里显示的本地地址（通常是：
+http://localhost:5173/ai-town/ ）
+
+#### 5) LLM 配置（可选）
+
+不配置也可以正常游玩与观察模拟。
+
+如果你想开启「AI 总结/关系分析」等增强能力，可以在应用的**设置页**填写：
+- **API Key**
+- **Base URL**
+
+本项目支持 OpenAI / DeepSeek / Ollama 等 **OpenAI-compatible** 服务。
+
+#### 6) 首次使用（建议流程）
+
+1. 打开页面后选择「**风莫村**」世界观
+2. 可以使用 6 位预设角色，也可以自定义导入你的 OC
+3. 点击「**开始模拟**」，观察角色自由互动
+
+更详细的安装与排错请看：[`SETUP.md`](./SETUP.md)
 
 ---
 
