@@ -1,0 +1,91 @@
+import { StoryEvent } from './types';
+
+// 风莫村 · 开局预设事件（seed 展示用）
+// 顶部拼在事件卷轴最前，营造「章回小说开篇」的氛围。
+// 老皇驾崩 / 新皇登基 / 村中动荡 —— importance=3 者渲染为牌签（Sealed Card）。
+
+export const sampleEvents: StoryEvent[] = [
+  {
+    id: 'seed-chapter-1',
+    ts: 1,
+    type: 'chapter',
+    actors: [],
+    text: '',
+    title: '风起风莫',
+    chapterNo: '第一幕',
+    mood: 'calm',
+  },
+  {
+    id: 'seed-narration-1',
+    ts: 2,
+    type: 'narration',
+    actors: [],
+    text: '风莫村地处两京官道之侧，往来客商在此打尖歇脚。村口一株老槐，槐下一座酒馆，酒馆里从不缺闲话。这一年是建元三年，春末，柳絮方尽，暑气未起。',
+    mood: 'calm',
+  },
+  {
+    id: 'seed-seal-emperor-dead',
+    ts: 3,
+    type: 'system',
+    actors: [],
+    text: '先帝于三月十七夜崩于乾清宫，秘不发丧。消息封锁三日，直至驿马换尽方才传至各州县。风莫村得讯时，已是四月初一的清晨。',
+    title: '老皇驾崩',
+    chapterNo: '邸报 · 其一',
+    importance: 3,
+    mood: 'grim',
+  },
+  {
+    id: 'seed-seal-new-emperor',
+    ts: 4,
+    type: 'system',
+    actors: [],
+    text: '四月初九，新君于奉天殿即位，改元「承平」，大赦天下。诏书言：厂卫巡查如旧，凡妄议朝政、聚众生事者，就地拿问。一纸明黄，压得官道上的行人都放轻了脚步。',
+    title: '新皇登基',
+    chapterNo: '邸报 · 其二',
+    importance: 3,
+    mood: 'tense',
+  },
+  {
+    id: 'seed-narration-2',
+    ts: 5,
+    type: 'narration',
+    actors: [],
+    text: '国丧未过，风声先到。这几日，村里多了几张生面孔——有腰间佩刀、目光如刀的，也有笑意盈盈、却句句探底的。柳三娘照旧擦着她的碗，只是那双眼睛，比往日更亮了几分。',
+    mood: 'mystery',
+  },
+  {
+    id: 'seed-encounter-1',
+    ts: 6,
+    type: 'encounter',
+    actors: ['沈十三', '汪直'],
+    text: '午后，酒馆最里的两张桌上，一个锦衣卫、一个东厂番子，隔着三步远各自饮茶，谁也不看谁，谁也没走。空气里那点火药味，连跑堂的都不敢往那边凑。',
+    mood: 'tense',
+  },
+  {
+    id: 'seed-relationship-1',
+    ts: 7,
+    type: 'relationship',
+    actors: ['汪直', '顾文修'],
+    text: '汪直朝落第书生顾文修那桌递了个笑脸，顺手替他添了盏茶。顾文修的手，抖了一下。',
+    relationDelta: 'down',
+    mood: 'tense',
+  },
+  {
+    id: 'seed-chapter-2',
+    ts: 8,
+    type: 'chapter',
+    actors: [],
+    text: '',
+    title: '茶凉话未凉',
+    chapterNo: '第二幕',
+    mood: 'calm',
+  },
+  {
+    id: 'seed-narration-3',
+    ts: 9,
+    type: 'narration',
+    actors: [],
+    text: '说书人白笑生把醒木一拍，压住了满堂杂声。他清了清嗓子——今日要讲的，是二十年前那桩没人敢提的旧案。台下唐二刀先叫了声好，柳三娘却悄悄往门口望了一眼。',
+    mood: 'mystery',
+  },
+];

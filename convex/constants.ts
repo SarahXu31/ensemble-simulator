@@ -75,4 +75,25 @@ export const ENGINE_ACTION_DURATION = 30000;
 // Bound the number of pathfinding searches we do per game step.
 export const MAX_PATHFINDS_PER_STEP = 16;
 
-export const DEFAULT_NAME = 'Me';
+export const DEFAULT_NAME = '外乡人';
+
+// ── 改动1 & 改动6：游戏时间倍速（time scale）───────────────────────────
+// 倍速 = 游戏内时间流速相对现实的倍数。8x 表示游戏内 1 小时 = 现实 7.5 分钟。
+export const DEFAULT_TIME_SCALE = 8; // 默认 8x（改动1）
+// 可选档位：慢节奏 4x / 默认 8x / 快进 16x / 测试模式 60x（改动6）
+export const TIME_SCALE_PRESETS = [4, 8, 16, 60] as const;
+// localStorage 键名，前端保存用户所选倍速（改动6）。
+export const TIME_SCALE_STORAGE_KEY = 'fengmo_time_scale';
+
+// 关系值 LLM 打分的基准间隔：DEFAULT_TIME_SCALE(8x) 下每现实 8 小时一次（改动4）。
+export const RELATION_SCORING_BASE_MS = 8 * 60 * 60 * 1000; // 28,800,000ms
+// 人设漂移的基准间隔：DEFAULT_TIME_SCALE(8x) 下每现实 24 小时一次（改动5）。
+export const PERSONA_DRIFT_BASE_MS = 24 * 60 * 60 * 1000; // 86,400,000ms
+
+// 把「基准倍速(8x)下配置的现实时长」按当前倍速换算为等效现实时长（改动6）。
+// 倍速越高游戏跑得越快，同样的游戏内进度所需现实时间越短。
+// 例：关系打分基准 8h@8x，16x 时换算为 4h，4x 时换算为 16h。
+export function scaledRealMs(baseRealMsAt8x: number, scale: number): number {
+  const s = scale > 0 ? scale : DEFAULT_TIME_SCALE;
+  return (baseRealMsAt8x * DEFAULT_TIME_SCALE) / s;
+}

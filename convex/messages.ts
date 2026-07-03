@@ -11,19 +11,23 @@ export const listMessages = query({
   handler: async (ctx, args) => {
     const messages = await ctx.db
       .query('messages')
-      .withIndex('conversationId', (q) => q.eq('worldId', args.worldId).eq('conversationId', args.conversationId))
+      .withIndex('conversationId', (q) =>
+        q.eq('worldId', args.worldId).eq('conversationId', args.conversationId),
+      )
       .collect();
-    const out = [];
-    for (const message of messages) {
-      const playerDescription = await ctx.db
-        .query('playerDescriptions')
-        .withIndex('worldId', (q) => q.eq('worldId', args.worldId).eq('playerId', message.author))
-        .first();
-      if (!playerDescription) {
-        throw new Error(`Invalid author ID: ${message.author}`);
-      }
-      out.push({ ...message, authorName: playerDescription.name });
-    }
+
+    // 修复 N+1：一次性拉取本世界所有 playerDescriptions，用 Map 查找
+    const descs = await ctx.db
+      .query('playerDescriptions')
+      .withIndex('worldId', (q) => q.eq('worldId', args.worldId))
+      .collect();
+    const nameByPlayer = new Map(descs.map((d) => [d.playerId, d.name] as const));
+
+    const out = messages.map((m) => {
+      const name = nameByPlayer.get(m.author);
+      if (!name) throw new Error(`Invalid author ID: ${m.author}`);
+      return { ...m, authorName: name };
+    });
     return out;
   },
 });

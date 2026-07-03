@@ -15,13 +15,18 @@ crons.interval(
 
 crons.interval('restart dead worlds', { seconds: 60 }, internal.world.restartDeadWorlds);
 
+// 大事件系统：每分钟检查一次是否有到点的世界大事件需要触发。
+crons.interval('trigger world events', { seconds: 60 }, internal.worldEvents.worldEventTicker);
+
 crons.daily('vacuum old entries', { hourUTC: 4, minuteUTC: 20 }, internal.crons.vacuumOldEntries);
 
 export default crons;
 
 const TablesToVacuum: TableNames[] = [
-  // Un-comment this to also clean out old conversations.
-  // 'conversationMembers', 'conversations', 'messages',
+  // 恢复 ai-town 原版 vacuum 设计：当前 schema 下清理消息与归档会话数据，避免无限增长。
+  'messages',
+  'archivedConversations',
+  'participatedTogether',
 
   // Inputs aren't useful unless you're trying to replay history.
   // If you want to support that, you should add a snapshot table, so you can

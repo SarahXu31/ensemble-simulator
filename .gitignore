@@ -42,3 +42,8 @@ dist
 
 convex-local*
 convex_local*
+node_modules/
+.env.local
+dist/
+.convex/
+*.log

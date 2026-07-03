@@ -7,6 +7,7 @@ import { asyncMap } from '../util/asyncMap';
 import { GameId, agentId, conversationId, playerId } from '../aiTown/ids';
 import { SerializedPlayer } from '../aiTown/player';
 import { memoryFields } from './schema';
+import { updateRelationshipAfterConversation } from './relationships';
 
 // How long to wait before updating a memory's last access time.
 export const MEMORY_ACCESS_THROTTLE = 300_000; // In ms
@@ -42,9 +43,8 @@ export async function rememberConversation(
   const llmMessages: LLMMessage[] = [
     {
       role: 'user',
-      content: `You are ${player.name}, and you just finished a conversation with ${otherPlayer.name}. I would
-      like you to summarize the conversation from ${player.name}'s perspective, using first-person pronouns like
-      "I," and add if you liked or disliked this interaction.`,
+      content: `你是${player.name}，你刚刚和${otherPlayer.name}聊完了一段话。请你以${player.name}的第一人称视角（用"我"）` +
+        `用简体中文总结这段对话，并说说你喜不喜欢这次交谈、对${otherPlayer.name}多了几分什么感觉。只用中文，简短几句即可。`,
     },
   ];
   const authors = new Set<GameId<'players'>>();
@@ -62,9 +62,9 @@ export async function rememberConversation(
     messages: llmMessages,
     max_tokens: 500,
   });
-  const description = `Conversation with ${otherPlayer.name} at ${new Date(
+  const description = `与${otherPlayer.name}的对话（${new Date(
     data.conversation._creationTime,
-  ).toLocaleString()}: ${content}`;
+  ).toLocaleString()}）：${content}`;
   const importance = await calculateImportance(description);
   const { embedding } = await fetchEmbedding(description);
   authors.delete(player.id as GameId<'players'>);
@@ -82,6 +82,8 @@ export async function rememberConversation(
     embedding,
   });
   await reflectOnMemories(ctx, worldId, playerId);
+  // 轻关系层：根据这次对话，更新「当前角色」对「对方」的关系值（好感 / 信任 / 戒备）。
+  await updateRelationshipAfterConversation(ctx, worldId, player.name, otherPlayer.name, content);
   return description;
 }
 
@@ -244,6 +246,22 @@ export const loadMessages = internalQuery({
 });
 
 async function calculateImportance(description: string) {
+  const normalizedDescription = description.toLowerCase();
+  // 参考 Letta / CrewAI 的重要度分层思路：显著事件先走规则筛选，模糊记忆再 fallback 到 LLM。
+  if (
+    /(冲突|争吵|秘密|隐瞒|目标|任务|计划|死亡|死了|凶手|谋杀|背叛|叛徒|复仇|威胁|阴谋|真相|告密|失踪|受伤|表白|分手|betray|secret|goal|mission|death|murder|kill|revenge|threat)/.test(
+      normalizedDescription,
+    )
+  ) {
+    return 8;
+  }
+  if (/(打招呼|寒暄|闲聊|天气|吃饭|散步|路过|等待|休息|睡觉|喝水|发呆|问候|idle|hello|hi|weather|walk)/.test(normalizedDescription)) {
+    return 2;
+  }
+  if (/(见面|认识|提到|听说|观察到|发现|讨论|帮助|合作|邀请|拒绝|承诺|对话)/.test(normalizedDescription)) {
+    return 4;
+  }
+
   const { content: importanceRaw } = await chatCompletion({
     messages: [
       {
@@ -332,11 +350,12 @@ async function reflectOnMemories(
     {
       worldId,
       playerId,
-      numberOfItems: 100,
+      // 参考 Generative Agents 的 reflection trigger 只消费最近一批高重要度记忆，这里收紧到 25 条。
+      numberOfItems: 25,
     },
   );
 
-  // should only reflect if lastest 100 items have importance score of >500
+  // should only reflect if lastest 25 items have importance score of >500
   const sumOfImportanceScore = memories
     .filter((m) => m._creationTime > (lastReflectionTs ?? 0))
     .reduce((acc, curr) => acc + curr.importance, 0);

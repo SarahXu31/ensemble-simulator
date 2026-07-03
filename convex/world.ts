@@ -132,7 +132,7 @@ export const joinWorld = mutation({
     return await insertInput(ctx, world._id, 'join', {
       name,
       character: characters[Math.floor(Math.random() * characters.length)].name,
-      description: `${DEFAULT_NAME} is a human player`,
+      description: `${DEFAULT_NAME}是一位路过风莫村的观察者（人类玩家），只旁观与攀谈，并不扮演村里的任何角色。`,
       // description: `${identity.givenName} is a human player`,
       tokenIdentifier: DEFAULT_NAME,
     });

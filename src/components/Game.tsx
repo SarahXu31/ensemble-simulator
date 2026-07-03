@@ -1,85 +1,83 @@
-import { useRef, useState } from 'react';
-import PixiGame from './PixiGame.tsx';
-
-import { useElementSize } from 'usehooks-ts';
-import { Stage } from '@pixi/react';
-import { ConvexProvider, useConvex, useQuery } from 'convex/react';
-import PlayerDetails from './PlayerDetails.tsx';
+import { useState } from 'react';
+import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { useWorldHeartbeat } from '../hooks/useWorldHeartbeat.ts';
-import { useHistoricalTime } from '../hooks/useHistoricalTime.ts';
-import { DebugTimeManager } from './DebugTimeManager.tsx';
-import { GameId } from '../../convex/aiTown/ids.ts';
-import { useServerGame } from '../hooks/serverGame.ts';
+import { GameId } from '../../convex/aiTown/ids';
+import { useServerGame } from '../hooks/serverGame';
+import { useWorldHeartbeat } from '../hooks/useWorldHeartbeat';
+import ScrollFeed from './scroll/ScrollFeed';
+import CharacterSheet from './character/CharacterSheet';
+import { CloseIcon } from './icons';
 
+// 保留以兼容仍存在（但不再渲染）的 Pixi 相关文件，便于回滚。
 export const SHOW_DEBUG_UI = !!import.meta.env.VITE_SHOW_DEBUG_UI;
 
 export default function Game() {
-  const convex = useConvex();
-  const [selectedElement, setSelectedElement] = useState<{
-    kind: 'player';
-    id: GameId<'players'>;
-  }>();
-  const [gameWrapperRef, { width, height }] = useElementSize();
+  const [selectedPlayerId, setSelectedPlayerId] = useState<GameId<'players'>>();
 
   const worldStatus = useQuery(api.world.defaultWorldStatus);
   const worldId = worldStatus?.worldId;
   const engineId = worldStatus?.engineId;
-
   const game = useServerGame(worldId);
 
-  // Send a periodic heartbeat to our world to keep it alive.
+  // 心跳，保持世界存活。
   useWorldHeartbeat();
 
-  const worldState = useQuery(api.world.worldState, worldId ? { worldId } : 'skip');
-  const { historicalTime, timeManager } = useHistoricalTime(worldState?.engine);
-
-  const scrollViewRef = useRef<HTMLDivElement>(null);
-
   if (!worldId || !engineId || !game) {
-    return null;
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="font-body text-sm text-ink-500">卷轴徐徐展开，稍候……</p>
+      </div>
+    );
   }
+
   return (
-    <>
-      {SHOW_DEBUG_UI && <DebugTimeManager timeManager={timeManager} width={200} height={100} />}
-      <div className="mx-auto w-full max-w grid grid-rows-[240px_1fr] lg:grid-rows-[1fr] lg:grid-cols-[1fr_auto] lg:grow max-w-[1400px] min-h-[480px] game-frame">
-        {/* Game area */}
-        <div className="relative overflow-hidden bg-brown-900" ref={gameWrapperRef}>
-          <div className="absolute inset-0">
-            <div className="container">
-              <Stage width={width} height={height} options={{ backgroundColor: 0x7ab5ff }}>
-                {/* Re-propagate context because contexts are not shared between renderers.
-https://github.com/michalochman/react-pixi-fiber/issues/145#issuecomment-531549215 */}
-                <ConvexProvider client={convex}>
-                  <PixiGame
-                    game={game}
-                    worldId={worldId}
-                    engineId={engineId}
-                    width={width}
-                    height={height}
-                    historicalTime={historicalTime}
-                    setSelectedElement={setSelectedElement}
-                  />
-                </ConvexProvider>
-              </Stage>
-            </div>
+    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_320px]">
+      {/* 主栏 · 事件卷轴 */}
+      <div className="min-h-0">
+        <ScrollFeed worldId={worldId} game={game} onSelectPlayer={setSelectedPlayerId} />
+      </div>
+
+      {/* 右栏 · 人物簿（lg+ 常驻，粘顶） */}
+      <aside
+        className="hidden min-h-0 border-l lg:block"
+        style={{ borderColor: 'var(--kraft-brown)', backgroundColor: 'var(--paper-warm)' }}
+      >
+        <CharacterSheet
+          worldId={worldId}
+          engineId={engineId}
+          game={game}
+          playerId={selectedPlayerId}
+          onSelectPlayer={setSelectedPlayerId}
+        />
+      </aside>
+
+      {/* 移动端 · 人物簿折叠为顶部抽屉（选中角色时出现，非全屏遮罩） */}
+      {!!selectedPlayerId && (
+        <div
+          className="fixed inset-x-0 top-14 z-20 max-h-[70vh] overflow-hidden border-b shadow-lg lg:hidden"
+          style={{ borderColor: 'var(--kraft-brown)', backgroundColor: 'var(--paper-warm)' }}
+        >
+          <div className="flex justify-end px-3 pt-2">
+            <button
+              type="button"
+              aria-label="收起人物簿"
+              onClick={() => setSelectedPlayerId(undefined)}
+              className="cursor-pointer rounded-sm border border-kraft-brown p-1 text-ink-700"
+            >
+              <CloseIcon size={16} />
+            </button>
+          </div>
+          <div className="max-h-[62vh] overflow-y-auto">
+            <CharacterSheet
+              worldId={worldId}
+              engineId={engineId}
+              game={game}
+              playerId={selectedPlayerId}
+              onSelectPlayer={setSelectedPlayerId}
+            />
           </div>
         </div>
-        {/* Right column area */}
-        <div
-          className="flex flex-col overflow-y-auto shrink-0 px-4 py-6 sm:px-6 lg:w-96 xl:pr-6 border-t-8 sm:border-t-0 sm:border-l-8 border-brown-900  bg-brown-800 text-brown-100"
-          ref={scrollViewRef}
-        >
-          <PlayerDetails
-            worldId={worldId}
-            engineId={engineId}
-            game={game}
-            playerId={selectedElement?.id}
-            setSelectedElement={setSelectedElement}
-            scrollViewRef={scrollViewRef}
-          />
-        </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

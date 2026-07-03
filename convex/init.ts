@@ -8,6 +8,7 @@ import { Id } from './_generated/dataModel';
 import { createEngine } from './aiTown/main';
 import { ENGINE_ACTION_DURATION } from './constants';
 import { detectMismatchedLLMProvider } from './util/llm';
+import { INITIAL_RELATIONSHIPS } from '../data/relationships';
 
 const init = mutation({
   args: {
@@ -35,9 +36,34 @@ const init = mutation({
         });
       }
     }
+    // 轻关系层：为这个世界播种初始关系值（幂等，已存在则跳过）。
+    await seedRelationships(ctx, worldStatus.worldId);
   },
 });
 export default init;
+
+// 播种「风莫村」六位角色之间的初始关系（有方向）。
+async function seedRelationships(ctx: MutationCtx, worldId: Id<'worlds'>) {
+  const existing = await ctx.db
+    .query('relationships')
+    .withIndex('byPair', (q) => q.eq('worldId', worldId))
+    .first();
+  if (existing) {
+    return;
+  }
+  for (const from of Object.keys(INITIAL_RELATIONSHIPS)) {
+    for (const [to, vals] of Object.entries(INITIAL_RELATIONSHIPS[from])) {
+      await ctx.db.insert('relationships', {
+        worldId,
+        fromName: from,
+        toName: to,
+        favor: vals.favor,
+        trust: vals.trust,
+        tension: vals.tension,
+      });
+    }
+  }
+}
 
 async function getOrCreateDefaultWorld(ctx: MutationCtx) {
   const now = Date.now();

@@ -7,8 +7,18 @@ import { api, internal } from '../_generated/api';
 import * as embeddingsCache from './embeddingsCache';
 import { GameId, conversationId, playerId } from '../aiTown/ids';
 import { NUM_MEMORIES_TO_SEARCH } from '../constants';
+import { describeRelationship, getTaskHint } from '../../data/relationships';
 
 const selfInternal = internal.agent.conversation;
+
+type Relationship = { favor: number; trust: number; tension: number } | null;
+
+// 统一的语言与口吻约束：现代口语优先，少量古风点缀，避免空泛寒暄。
+const LANG_INSTRUCTION =
+  '使用简体中文交流。以现代口语为主，可以根据身份偶尔带一两个古风词汇（如“阁下”、“稍候”），但严禁整句使用晦涩文言。' +
+  '禁止毫无意义的寒暄、客套、夸赞或空泛的古风废话（如“近日可好”、“幸会”）。' +
+  '每一句话都必须包含以下之一：具体的真实情报、一个明确的待解决问题、对他人的试探、或表达明确的立场冲突。' +
+  '回答必须简短，控制在 200 字以内。';
 
 export async function startConversationMessage(
   ctx: ActionCtx,
@@ -17,15 +27,13 @@ export async function startConversationMessage(
   playerId: GameId<'players'>,
   otherPlayerId: GameId<'players'>,
 ): Promise<string> {
-  const { player, otherPlayer, agent, otherAgent, lastConversation } = await ctx.runQuery(
-    selfInternal.queryPromptData,
-    {
+  const { player, otherPlayer, agent, otherAgent, lastConversation, relationship } =
+    await ctx.runQuery(selfInternal.queryPromptData, {
       worldId,
       playerId,
       otherPlayerId,
       conversationId,
-    },
-  );
+    });
   const embedding = await embeddingsCache.fetch(
     ctx,
     `${player.name} is talking to ${otherPlayer.name}`,
@@ -41,17 +49,16 @@ export async function startConversationMessage(
   const memoryWithOtherPlayer = memories.find(
     (m) => m.data.type === 'conversation' && m.data.playerIds.includes(otherPlayerId),
   );
-  const prompt = [
-    `You are ${player.name}, and you just started a conversation with ${otherPlayer.name}.`,
-  ];
+  const prompt = [`你是${player.name}，你刚刚在风莫村里和${otherPlayer.name}搭上了话。`];
   prompt.push(...agentPrompts(otherPlayer, agent, otherAgent ?? null));
+  prompt.push(...relationshipPrompt(otherPlayer, relationship));
+  prompt.push(...taskPrompt(player));
   prompt.push(...previousConversationPrompt(otherPlayer, lastConversation));
   prompt.push(...relatedMemoriesPrompt(memories));
   if (memoryWithOtherPlayer) {
-    prompt.push(
-      `Be sure to include some detail or question about a previous conversation in your greeting.`,
-    );
+    prompt.push(`不要只说“你好”，直接切入你们上次聊过的话题，或者就某个具体细节发问。`);
   }
+  prompt.push(LANG_INSTRUCTION);
   const lastPrompt = `${player.name} to ${otherPlayer.name}:`;
   prompt.push(lastPrompt);
 
@@ -82,15 +89,13 @@ export async function continueConversationMessage(
   playerId: GameId<'players'>,
   otherPlayerId: GameId<'players'>,
 ): Promise<string> {
-  const { player, otherPlayer, conversation, agent, otherAgent } = await ctx.runQuery(
-    selfInternal.queryPromptData,
-    {
+  const { player, otherPlayer, conversation, agent, otherAgent, relationship } =
+    await ctx.runQuery(selfInternal.queryPromptData, {
       worldId,
       playerId,
       otherPlayerId,
       conversationId,
-    },
-  );
+    });
   const now = Date.now();
   const started = new Date(conversation.created);
   const embedding = await embeddingsCache.fetch(
@@ -99,28 +104,31 @@ export async function continueConversationMessage(
   );
   const memories = await memory.searchMemories(ctx, player.id as GameId<'players'>, embedding, 3);
   const prompt = [
-    `You are ${player.name}, and you're currently in a conversation with ${otherPlayer.name}.`,
-    `The conversation started at ${started.toLocaleString()}. It's now ${now.toLocaleString()}.`,
+    `你是${player.name}，你正在和${otherPlayer.name}交谈。`,
+    `这段对话开始于 ${started.toLocaleString()}，现在是 ${now.toLocaleString()}。`,
   ];
   prompt.push(...agentPrompts(otherPlayer, agent, otherAgent ?? null));
+  prompt.push(...relationshipPrompt(otherPlayer, relationship));
   prompt.push(...relatedMemoriesPrompt(memories));
   prompt.push(
-    `Below is the current chat history between you and ${otherPlayer.name}.`,
-    `DO NOT greet them again. Do NOT use the word "Hey" too often. Your response should be brief and within 200 characters.`,
+    `下面是你和${otherPlayer.name}目前的聊天记录。`,
+    `不要再重新打招呼。回答要简短，控制在 200 字以内。`,
   );
+  prompt.push(LANG_INSTRUCTION);
 
   const llmMessages: LLMMessage[] = [
     {
       role: 'system',
       content: prompt.join('\n'),
     },
+    // 参考 AutoGen 官方 BufferedChatCompletionContext 示例 buffer_size=5，这里只保留最近 5 条聊天记录。
     ...(await previousMessages(
       ctx,
       worldId,
       player,
       otherPlayer,
       conversation.id as GameId<'conversations'>,
-    )),
+    )).slice(-5),
   ];
   const lastPrompt = `${player.name} to ${otherPlayer.name}:`;
   llmMessages.push({ role: 'user', content: lastPrompt });
@@ -140,36 +148,37 @@ export async function leaveConversationMessage(
   playerId: GameId<'players'>,
   otherPlayerId: GameId<'players'>,
 ): Promise<string> {
-  const { player, otherPlayer, conversation, agent, otherAgent } = await ctx.runQuery(
-    selfInternal.queryPromptData,
-    {
+  const { player, otherPlayer, conversation, agent, otherAgent, relationship } =
+    await ctx.runQuery(selfInternal.queryPromptData, {
       worldId,
       playerId,
       otherPlayerId,
       conversationId,
-    },
-  );
+    });
   const prompt = [
-    `You are ${player.name}, and you're currently in a conversation with ${otherPlayer.name}.`,
-    `You've decided to leave the question and would like to politely tell them you're leaving the conversation.`,
+    `你是${player.name}，你正在和${otherPlayer.name}交谈。`,
+    `你决定结束这次谈话。不要说客套话，直接找个符合你性格的理由结束。`,
   ];
   prompt.push(...agentPrompts(otherPlayer, agent, otherAgent ?? null));
+  prompt.push(...relationshipPrompt(otherPlayer, relationship));
   prompt.push(
-    `Below is the current chat history between you and ${otherPlayer.name}.`,
-    `How would you like to tell them that you're leaving? Your response should be brief and within 200 characters.`,
+    `下面是你和${otherPlayer.name}目前的聊天记录。`,
+    `你打算怎么结束？回答要简短，控制在 200 字以内，并给出一个具体理由。`,
   );
+  prompt.push(LANG_INSTRUCTION);
   const llmMessages: LLMMessage[] = [
     {
       role: 'system',
       content: prompt.join('\n'),
     },
+    // 参考 AutoGen 官方 BufferedChatCompletionContext 示例 buffer_size=5，这里只保留最近 5 条聊天记录。
     ...(await previousMessages(
       ctx,
       worldId,
       player,
       otherPlayer,
       conversation.id as GameId<'conversations'>,
-    )),
+    )).slice(-5),
   ];
   const lastPrompt = `${player.name} to ${otherPlayer.name}:`;
   llmMessages.push({ role: 'user', content: lastPrompt });
@@ -184,18 +193,48 @@ export async function leaveConversationMessage(
 
 function agentPrompts(
   otherPlayer: { name: string },
-  agent: { identity: string; plan: string } | null,
+  agent: { identity: string; plan: string; personalityDrift?: string | null } | null,
   otherAgent: { identity: string; plan: string } | null,
 ): string[] {
   const prompt = [];
   if (agent) {
-    prompt.push(`About you: ${agent.identity}`);
-    prompt.push(`Your goals for the conversation: ${agent.plan}`);
+    prompt.push(`关于你：${agent.identity}`);
+    prompt.push(`你这次交谈的目标：${agent.plan}`);
+    // 改动5：附加近期人设漂移，让性格微调体现在言谈中。
+    if (agent.personalityDrift) {
+      prompt.push(`近期变化：${agent.personalityDrift}`);
+    }
   }
   if (otherAgent) {
-    prompt.push(`About ${otherPlayer.name}: ${otherAgent.identity}`);
+    prompt.push(`关于${otherPlayer.name}：${otherAgent.identity}`);
   }
   return prompt;
+}
+
+function relationshipPrompt(otherPlayer: { name: string }, relationship: Relationship): string[] {
+  if (!relationship) {
+    return [];
+  }
+  const lines = [describeRelationship(otherPlayer.name, relationship)];
+  // 改动4：关系值影响后续对话的附加提示（阈值按既有 0-100 关系模型映射）。
+  if (relationship.favor > 65) {
+    lines.push(`你对${otherPlayer.name}颇有好感，乐于帮助。`);
+  }
+  if (relationship.trust < 35) {
+    lines.push(`你对${otherPlayer.name}心存警惕，言语间有所保留。`);
+  }
+  if (relationship.tension > 65) {
+    lines.push(`你与${otherPlayer.name}之间剑拔弩张，随时可能起冲突。`);
+  }
+  return lines;
+}
+
+function taskPrompt(player: { name: string }): string[] {
+  const hint = getTaskHint(player.name);
+  if (!hint) {
+    return [];
+  }
+  return [`你心里还揣着一个小目标 —— ${hint}（可以自然地体现在言谈举止里，不必生硬说出。）`];
 }
 
 function previousConversationPrompt(
@@ -207,9 +246,7 @@ function previousConversationPrompt(
     const prev = new Date(conversation.created);
     const now = new Date();
     prompt.push(
-      `Last time you chatted with ${
-        otherPlayer.name
-      } it was ${prev.toLocaleString()}. It's now ${now.toLocaleString()}.`,
+      `你上次和${otherPlayer.name}交谈是在 ${prev.toLocaleString()}，现在是 ${now.toLocaleString()}。`,
     );
   }
   return prompt;
@@ -218,7 +255,7 @@ function previousConversationPrompt(
 function relatedMemoriesPrompt(memories: memory.Memory[]): string[] {
   const prompt = [];
   if (memories.length > 0) {
-    prompt.push(`Here are some related memories in decreasing relevance order:`);
+    prompt.push(`下面是一些相关的记忆，按相关度从高到低排列：`);
     for (const memory of memories) {
       prompt.push(' - ' + memory.description);
     }
@@ -330,17 +367,51 @@ export const queryPromptData = internalQuery({
         throw new Error(`Conversation ${lastTogether.conversationId} not found`);
       }
     }
+
+    // 轻关系层：读取「当前角色」对「对方」的关系值，用于注入对话 prompt。
+    const relationshipRow = await ctx.db
+      .query('relationships')
+      .withIndex('byPair', (q) =>
+        q
+          .eq('worldId', args.worldId)
+          .eq('fromName', playerDescription.name)
+          .eq('toName', otherPlayerDescription.name),
+      )
+      .first();
+    const relationship: Relationship = relationshipRow
+      ? {
+          favor: relationshipRow.favor,
+          trust: relationshipRow.trust,
+          tension: relationshipRow.tension,
+        }
+      : null;
+
+    // 改动5：读取当前角色的人设漂移，注入对话 prompt（近期变化）。
+    const driftRow = await ctx.db
+      .query('personalityDrifts')
+      .withIndex('byName', (q) =>
+        q.eq('worldId', args.worldId).eq('name', playerDescription.name),
+      )
+      .first();
+    const personalityDrift = driftRow?.drift ?? null;
+
     return {
       player: { name: playerDescription.name, ...player },
       otherPlayer: { name: otherPlayerDescription.name, ...otherPlayer },
       conversation,
-      agent: { identity: agentDescription.identity, plan: agentDescription.plan, ...agent },
+      agent: {
+        identity: agentDescription.identity,
+        plan: agentDescription.plan,
+        personalityDrift,
+        ...agent,
+      },
       otherAgent: otherAgent && {
         identity: otherAgentDescription!.identity,
         plan: otherAgentDescription!.plan,
         ...otherAgent,
       },
       lastConversation,
+      relationship,
     };
   },
 });

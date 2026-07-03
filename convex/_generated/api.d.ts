@@ -11,6 +11,7 @@
 import type * as agent_conversation from "../agent/conversation.js";
 import type * as agent_embeddingsCache from "../agent/embeddingsCache.js";
 import type * as agent_memory from "../agent/memory.js";
+import type * as agent_relationships from "../agent/relationships.js";
 import type * as aiTown_agent from "../aiTown/agent.js";
 import type * as aiTown_agentDescription from "../aiTown/agentDescription.js";
 import type * as aiTown_agentInputs from "../aiTown/agentInputs.js";
@@ -29,14 +30,21 @@ import type * as aiTown_player from "../aiTown/player.js";
 import type * as aiTown_playerDescription from "../aiTown/playerDescription.js";
 import type * as aiTown_world from "../aiTown/world.js";
 import type * as aiTown_worldMap from "../aiTown/worldMap.js";
+import type * as characterProfiles from "../characterProfiles.js";
 import type * as constants from "../constants.js";
+import type * as contacts from "../contacts.js";
 import type * as crons from "../crons.js";
 import type * as engine_abstractGame from "../engine/abstractGame.js";
 import type * as engine_historicalObject from "../engine/historicalObject.js";
+import type * as gameSettings from "../gameSettings.js";
 import type * as http from "../http.js";
 import type * as init from "../init.js";
 import type * as messages from "../messages.js";
 import type * as music from "../music.js";
+import type * as personalityDrift from "../personalityDrift.js";
+import type * as players from "../players.js";
+import type * as relationshipScoring from "../relationshipScoring.js";
+import type * as reseed from "../reseed.js";
 import type * as testing from "../testing.js";
 import type * as util_FastIntegerCompression from "../util/FastIntegerCompression.js";
 import type * as util_assertNever from "../util/assertNever.js";
@@ -51,6 +59,8 @@ import type * as util_sleep from "../util/sleep.js";
 import type * as util_types from "../util/types.js";
 import type * as util_xxhash from "../util/xxhash.js";
 import type * as world from "../world.js";
+import type * as worldEvents from "../worldEvents.js";
+import type * as worldEventsPresets from "../worldEventsPresets.js";
 
 import type {
   ApiFromModules,
@@ -62,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   "agent/conversation": typeof agent_conversation;
   "agent/embeddingsCache": typeof agent_embeddingsCache;
   "agent/memory": typeof agent_memory;
+  "agent/relationships": typeof agent_relationships;
   "aiTown/agent": typeof aiTown_agent;
   "aiTown/agentDescription": typeof aiTown_agentDescription;
   "aiTown/agentInputs": typeof aiTown_agentInputs;
@@ -80,14 +91,21 @@ declare const fullApi: ApiFromModules<{
   "aiTown/playerDescription": typeof aiTown_playerDescription;
   "aiTown/world": typeof aiTown_world;
   "aiTown/worldMap": typeof aiTown_worldMap;
+  characterProfiles: typeof characterProfiles;
   constants: typeof constants;
+  contacts: typeof contacts;
   crons: typeof crons;
   "engine/abstractGame": typeof engine_abstractGame;
   "engine/historicalObject": typeof engine_historicalObject;
+  gameSettings: typeof gameSettings;
   http: typeof http;
   init: typeof init;
   messages: typeof messages;
   music: typeof music;
+  personalityDrift: typeof personalityDrift;
+  players: typeof players;
+  relationshipScoring: typeof relationshipScoring;
+  reseed: typeof reseed;
   testing: typeof testing;
   "util/FastIntegerCompression": typeof util_FastIntegerCompression;
   "util/assertNever": typeof util_assertNever;
@@ -102,6 +120,8 @@ declare const fullApi: ApiFromModules<{
   "util/types": typeof util_types;
   "util/xxhash": typeof util_xxhash;
   world: typeof world;
+  worldEvents: typeof worldEvents;
+  worldEventsPresets: typeof worldEventsPresets;
 }>;
 
 /**

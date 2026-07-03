@@ -1,185 +1,128 @@
+/* 风莫村 · 古风卷轴设计系统 —— 唯一真值来源见 design-system/MASTER.md */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Upheaval Pro';
-  src: url(/assets/fonts/upheaval_pro.ttf);
-}
-
-@font-face {
-  font-family: 'VCR OSD Mono';
-  src: url(/assets/fonts/vcr_osd_mono.ttf);
-}
-
-.font-display {
-  font-family: 'Upheaval Pro', 'sans-serif';
-}
-
-.font-body {
-  font-family: 'VCR OSD Mono', 'monospace';
-}
-
-.font-system {
-  font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-}
-
+/* ========== 色板 / 字体（MASTER.md 第 2、3 节） ========== */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --paper-bg: #fdfbf7;
+  --paper-warm: #f5f0e1;
+  --paper-fold: #eae2ce;
+  --ink-900: #1a1a1a;
+  --ink-700: #3a3a3a;
+  --ink-500: #6b6b6b;
+  --kraft-brown: #c4a77d;
+  --kraft-dark: #8b6f47;
+  --vermilion: #b83a3a;
+  --vermilion-soft: #d96666;
+  --jade: #2e5e4e;
+  --umber: #5c3b2e;
+
+  --font-title: 'Ma Shan Zheng', 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  --font-body: 'Noto Serif SC', Georgia, serif;
+  --font-caption: 'Noto Sans SC', system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+.font-title {
+  font-family: var(--font-title);
+}
+.font-body {
+  font-family: var(--font-body);
+}
+.font-caption {
+  font-family: var(--font-caption);
+}
+
+/* ========== 宣纸底纹（SVG noise data-uri） ========== */
+html,
+body {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
-    rgb(var(--background-start-rgb));
+  color: var(--ink-900);
+  background-color: var(--paper-bg);
+  /* 极淡的宣纸颗粒噪点，叠一层暖色，营造陈纸质感 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.72 0 0 0 0 0.63 0 0 0 0 0.47 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-.game-background {
-  background: linear-gradient(rgba(41, 41, 41, 0.8), rgba(41, 41, 41, 0.8)),
-    url(../assets/background.webp);
-  background-blend-mode: hard-light;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
+#root {
+  min-height: 100vh;
 }
 
-.game-title {
-  background: linear-gradient(to bottom, #fec742, #dd7c42);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0px 0.08em 0px #6e2146);
+/* ========== 排版细节 ========== */
+.paper-panel {
+  background-color: var(--paper-warm);
+  border: 1px solid var(--kraft-brown);
 }
 
-.game-frame {
-  border-width: 36px;
-  border-image-source: url(../assets/ui/frame.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 25%;
-}
-
-.game-progress-bar {
-  border: 5px solid rgb(23, 20, 33);
-}
-
-@keyframes moveStripes {
+/* 事件到达入场动效：translateY(6→0) + opacity 0→1，200ms */
+@keyframes fmc-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
   to {
-    background-position: calc(100% + 28px) 0;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
-
-.game-progress-bar-progress {
-  background: repeating-linear-gradient(135deg, white, white 10px, #dfdfdf 10px, #dfdfdf 20px);
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  animation: moveStripes 0.5s linear infinite;
+.fmc-enter {
+  animation: fmc-enter 200ms ease-out both;
 }
 
-@media screen and (min-width: 640px) {
-  .game-frame {
-    border-width: 48px;
+/* 牌签入场：opacity 0→1 + translateY(8px)，200ms ease-out */
+@keyframes fmc-seal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
-
-.shadow-solid {
-  text-shadow: 0 0.1em 0 rgba(0, 0, 0, 0.5);
+.fmc-seal-enter {
+  animation: fmc-seal-enter 200ms ease-out both;
 }
 
-.bubble {
-  border-width: 30px;
-  border-image-source: url(../assets/ui/bubble-left.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 20%;
-}
-
-.bubble-mine {
-  border-image-source: url(../assets/ui/bubble-right.svg);
-}
-
-.box {
-  border-width: 12px;
-  border-image-source: url(../assets/ui/box.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 12.5%;
-}
-
-.desc {
-  border-width: 56px;
-  border-image-source: url(../assets/ui/desc.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 28%;
-}
-
-.chats {
-  border-width: 24px;
-  border-image-source: url(../assets/ui/chats.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 40%;
-}
-
-.login-prompt {
-  border-width: 48px;
-  border-image-source: url(../assets/ui/jewel_box.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 40%;
-}
-
-.button {
-  border-width: 1em;
-  border-image-source: url(../assets/ui/button.svg);
-  border-image-repeat: stretch;
-  border-image-slice: 25%;
+/* 秘密字段：模糊，hover / focus 展开 */
+.fmc-secret {
+  filter: blur(3px);
+  transition: filter 160ms ease-out;
   cursor: pointer;
 }
-
-.button span {
-  display: inline-block;
-  transform: translateY(-15%);
+.fmc-secret:hover,
+.fmc-secret:focus-within {
+  filter: blur(0);
 }
 
-@media (max-width: 640px) {
-  .button {
-    height: 40px;
-    border-width: 0.75em;
-    font-size: 16px;
+/* 细滚动条，贴合纸张风格 */
+.fmc-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.fmc-scroll::-webkit-scrollbar-thumb {
+  background: var(--kraft-brown);
+  border-radius: 4px;
+}
+.fmc-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* prefers-reduced-motion：禁用所有过渡与动画 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
-
-  .button > div,
-  .button > span {
-    vertical-align: top;
-    line-height: 1;
-  }
-}
-
-.button:hover {
-  opacity: 0.8;
-}
-
-.button:active {
-  /* Inlining this image to avoid flashing during loading */
-  border-image-source: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='1' y='2' width='14' height='13' fill='%23181425'/%3E%3Crect x='2' y='1' width='12' height='15' fill='%23181425'/%3E%3Crect y='3' width='16' height='11' fill='%23181425'/%3E%3Crect x='2' y='14' width='12' height='1' fill='%23262B44'/%3E%3Crect x='1' y='3' width='14' height='11' fill='%233A4466'/%3E%3Crect x='2' y='2' width='12' height='9' fill='%233A4466'/%3E%3Crect x='1' y='13' width='1' height='1' fill='%23262B44'/%3E%3Crect x='14' y='13' width='1' height='1' fill='%23262B44'/%3E%3C/svg%3E%0A");
-}
-
-.button:active span {
-  transform: none;
-}
-
-p[contenteditable='true']:empty::before {
-  content: attr(placeholder);
-  color: #aaa;
-}
-
-.shape-top-left-corner {
-  clip-path: polygon(0 0, 100% 0, 0 100%);
 }
